@@ -25,22 +25,25 @@ The objective is to offer a practical 5G SA deployment that combines the flexibi
 
 ## 🧩 Software and Versions Used
 
-| Software / Library         | Version Used / Recommended         | Purpose                                                         | Source / Notes                                                              |
-|---------------------------|------------------------------------|-----------------------------------------------------------------|-----------------------------------------------------------------------------|
-| **srsRAN Project**        | `release_24_03`                    | 5G stack: gNB, 5GC (AMF, SMF, UPF), CU/DU split                  | [GitHub](https://github.com/srsran/srsRAN_Project)                         |
-| **LimeSuite**             | `v22.09.1`                         | SDR driver and utilities for LimeSDR hardware                   | [GitHub](https://github.com/myriadrf/LimeSuite)                             |
-| **SoapySDR**              | `soapy-sdr-0.8.1`                  | SDR abstraction layer                                           | [GitHub](https://github.com/pothosware/SoapySDR)                            |
-| **Python**                | `3.9+`                             | Required for scripts and SIM provisioning tools                 | Bundled with Ubuntu 20.04+                                                  |
-| **CMake**                 | `3.16+`                            | Build system for C++ components                                 | `sudo apt install cmake`                                                    |
-| **GCC / G++**             | `>=9.x`                            | C/C++ compiler                                                  | Default in Ubuntu 20.04 / Debian 11                                         |
-| **libboost-dev**          | `>=1.71`                           | Dependency for various components                               | `sudo apt install libboost-all-dev`                                         |
-| **libconfig++-dev**       | `1.5.x` or compatible              | Configuration parser                                            | `sudo apt install libconfig++-dev`                                          |
+| Software / Library         | Version Used / Recommended   | Purpose                                                         | Source / Notes                                         |
+|---------------------------|------------------------------|-----------------------------------------------------------------|--------------------------------------------------------|
+| **srsRAN Project**        | `release_limesdr_24_10_1`    | 5G stack: gNB, 5GC (AMF, SMF, UPF), CU/DU split                 | [GitHub](https://github.com/ramosaurio/srsRAN_Project) |
+| **LimeSuite**             | `v22.09.1`                   | SDR driver and utilities for LimeSDR hardware                   | [GitHub](https://github.com/myriadrf/LimeSuite)        |
+| **SoapySDR**              | `soapy-sdr-0.8.1`            | SDR abstraction layer                                           | [GitHub](https://github.com/pothosware/SoapySDR)       |
+| **UHD**                   | `master`                     | Driver and tools for USRP SDR devices                           | [GitHub](https://github.com/EttusResearch/uhd)         |
+| **SoapyUHD**              | `master`                     | SoapySDR plugin for UHD-supported devices                       | [GitHub](https://github.com/pothosware/SoapyUHD)       |
+| **docker_open5gs**        | `master`                     | Dockerized 5GC (Open5GS core) with Kamailio support             | [GitHub](https://github.com/herlesupreeth/docker_open5gs.git) |
+| **Python**                | `3.9+`                       | Required for scripts and SIM provisioning tools                 | Bundled with Ubuntu 20.04+                             |
+| **CMake**                 | `3.16+`                      | Build system for C++ components                                 | `sudo apt install cmake`                               |
+| **GCC / G++**             | `>=9.x`                      | C/C++ compiler                                                  | Default in Ubuntu 20.04 / Debian 11                    |
+| **libboost-dev**          | `>=1.71`                     | Dependency for various components                               | `sudo apt install libboost-all-dev`                    |
+| **libconfig++-dev**       | `1.5.x` or compatible        | Configuration parser                                            | `sudo apt install libconfig++-dev`                     |
 
 ## 💻 Minimal Hardware Requirements
 
-- **CPU**: Quad-core Intel or better (e.g., Intel NUC / Ryzen)
-- **RAM**: 8GB minimum (tested with 4GB with limitations)
-- **Disk**: 16GB SSD recommended
+- **CPU**: Quad-core Intel Core I7 5ª Gen or better 
+- **RAM**: 8GB minimum 
+- **Disk**: 100GB SSD recommended
 - **SDR**: LimeSDR Mini (tested)
 - **OS**: Ubuntu 20.04 (others may work with adaptation)
 # 📡 RAN Setup: srsRAN 5G + LimeSDR + UHD + SoapySDR
