@@ -1,0 +1,18 @@
+[submodule "submodules/SoapyUHD"]
+	path = submodules/SoapyUHD
+	url = https://github.com/ramosaurio/SoapyUHD.git
+[submodule "submodules/docker_open5gs"]
+	path = submodules/docker_open5gs
+	url = https://github.com/ramosaurio/docker_open5gs.git
+[submodule "submodules/LimeSuite"]
+	path = submodules/LimeSuite
+	url = https://github.com/ramosaurio/LimeSuite.git
+[submodule "submodules/SoapySDR"]
+	path = submodules/SoapySDR
+	url = https://github.com/ramosaurio/SoapySDR.git
+[submodule "submodules/srsRAN_Project"]
+	path = submodules/srsRAN_Project
+	url = https://github.com/ramosaurio/srsRAN_Project.git
+[submodule "submodules/uhd"]
+	path = submodules/uhd
+	url = https://github.com/ramosaurio/uhd.git
