@@ -72,6 +72,7 @@ All components must be built and installed under a local prefix to keep the envi
 
 ```bash
 # Define the local install path
+git clone --recurse-submodules git@github.com:ramosaurio/5G-Core-Network-LimeSDR.git
 export SRSRAN_INSTALL=$HOME/ran-5g
 mkdir -p "$SRSRAN_INSTALL"
 export LD_LIBRARY_PATH=${SRSRAN_INSTALL}/lib
@@ -82,6 +83,7 @@ export PATH=${SRSRAN_INSTALL}/bin:$PATH
 📖 [Reference: SoapySDR Wiki](https://github.com/pothosware/SoapySDR/wiki)
 
 ```bash
+sudo apt install g++ cmake libpython3-dev python3-numpy swig
 cd submodules/SoapySDR
 mkdir build && cd build
 cmake -DCMAKE_PREFIX_PATH=$SRSRAN_INSTALL -DCMAKE_INSTALL_PREFIX=$SRSRAN_INSTALL ..
@@ -89,31 +91,47 @@ make -j$(nproc)
 make install
 ```
 
-### 2. Build and install UHD
+### 2. Build and install LimeSuite
+📖 [Reference: SoapySDR Wiki](https://github.com/pothosware/SoapySDR/wiki)
+
+```bash
+sudo apt-get install libi2c-dev libusb-1.0-0-dev
+cd submodules/LimeSuite
+mkdir build && cd build
+cmake -DCMAKE_PREFIX_PATH=$SRSRAN_INSTALL -DCMAKE_INSTALL_PREFIX=$SRSRAN_INSTALL ..
+make -j$(nproc)
+make install
+cd ../udev-rules
+sudo bash install.sh
+```
+
+
+### 3. Build and install UHD
 📖 [Reference: UHD Wiki](https://github.com/EttusResearch/uhd/wiki)
 
 > ⚠️ You **must** build UHD from the `host/` directory.
 
 ```bash
-  cd submodules/uhd/host
+sudo apt install libboost-all-dev python3-setuptools
+cd submodules/uhd/host
 mkdir build && cd build
 cmake -DCMAKE_PREFIX_PATH=$SRSRAN_INSTALL -DCMAKE_INSTALL_PREFIX=$SRSRAN_INSTALL ..
 make -j$(nproc)
 make install
 ```
 
-### 3. Build and install SoapyUHD
+### 4. Build and install SoapyUHD
 📖 [Reference: SoapyUHD Wiki](https://github.com/pothosware/SoapyUHD/wiki)
 
 ```bash
-  cd submodules/SoapyUHD
+cd submodules/SoapyUHD
 mkdir build && cd build
 cmake -DCMAKE_PREFIX_PATH=$SRSRAN_INSTALL -DCMAKE_INSTALL_PREFIX=$SRSRAN_INSTALL ..
 make -j$(nproc)
 make install
 ```
 
-### 4. Build and install LimeSuite
+### 5. Build and install LimeSuite
 📖 [Reference: SoapySDR Wiki](https://github.com/pothosware/SoapySDR/wiki)
 
 ```bash
@@ -124,16 +142,19 @@ make -j$(nproc)
 make install
 ```
 
-### 5. Build and install srsRAN_Project
+### 6 Build and install srsRAN_Project
 📖 [Reference: srsRAN Installation Guide](https://docs.srsran.com/projects/project/en/latest/user_manuals/source/installation.html)
 
 > 📌 Make sure you're on tag `release_limesdr_24_10_1`. This is already set in the submodule but it's good practice to verify:
 
 ```bash
-  cd submodules/srsRAN_Project
-git checkout release_limesdr_24_10_1
+sudo apt install libmbedtls-dev libfftw3-dev libgtest-dev libyaml-cpp-dev libsctp-dev lksctp-tools
+cd submodules/srsRAN_Project
 mkdir build && cd build
-cmake -DCMAKE_PREFIX_PATH=$SRSRAN_INSTALL -DCMAKE_INSTALL_PREFIX=$SRSRAN_INSTALL ..
+cmake -DCMAKE_PREFIX_PATH=$SRSRAN_INSTALL \
+      -DCMAKE_INSTALL_PREFIX=$SRSRAN_INSTALL \
+      -DCMAKE_CXX_FLAGS="-Wno-error=unused-result -Wno-error=maybe-uninitialized -Wno-error=stringop-overflow" \
+      ..
 make -j$(nproc)
 make install
 ```
