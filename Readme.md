@@ -68,7 +68,7 @@ All components must be built and installed under a local prefix to keep the envi
 
 ---
 
-## ⚙️ Build and install all components
+## ⚙️ Build and install RAN components
 
 ```bash
 # Define the local install path
@@ -97,7 +97,7 @@ make install
 ```bash
 sudo apt-get install libi2c-dev libusb-1.0-0-dev
 cd submodules/LimeSuite
-mkdir build && cd build
+mkdir builddir && cd builddir
 cmake -DCMAKE_PREFIX_PATH=$SRSRAN_INSTALL -DCMAKE_INSTALL_PREFIX=$SRSRAN_INSTALL ..
 make -j$(nproc)
 make install
@@ -131,18 +131,8 @@ make -j$(nproc)
 make install
 ```
 
-### 5. Build and install LimeSuite
-📖 [Reference: SoapySDR Wiki](https://github.com/pothosware/SoapySDR/wiki)
 
-```bash
-  cd submodules/LimeSuite
-mkdir build && cd build
-cmake -DCMAKE_PREFIX_PATH=$SRSRAN_INSTALL -DCMAKE_INSTALL_PREFIX=$SRSRAN_INSTALL ..
-make -j$(nproc)
-make install
-```
-
-### 6 Build and install srsRAN_Project
+### 5. Build and install srsRAN_Project
 📖 [Reference: srsRAN Installation Guide](https://docs.srsran.com/projects/project/en/latest/user_manuals/source/installation.html)
 
 > 📌 Make sure you're on tag `release_limesdr_24_10_1`. This is already set in the submodule but it's good practice to verify:
@@ -161,7 +151,7 @@ make install
 
 ---
 
-## ✅ Verifying the installation
+## ✅ Verifying the RAN installation
 
 ### 🔎 Check SoapySDR detection
 
@@ -231,6 +221,80 @@ Device Address:
 ```
 
 ❗If the device is not detected or `type: soapy` is missing, the UHD backend is not correctly linked to Soapy. Verify your `SoapyUHD` installation.
+
+---
+
+## ⚙️ Build and install CORE Network components
+> ⚠️ **Important note:** All components will be deployed on a **single host**. Although a multi-host architecture would be possible, it is not being used in this setup because there is no external clock source available. The system will rely on the **internal clock of the SDR**, which limits synchronization accuracy across multiple machines. Therefore, a monolithic deployment is chosen for this test environment.
+
+### 1. Install Docker
+📖 [Reference: Docker Docs](https://docs.docker.com/engine/install/ubuntu/)
+
+```bash
+sudo apt install apt-transport-https ca-certificates curl software-properties-common
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu focal stable"
+sudo apt update
+apt-cache policy docker-ce
+sudo apt install docker-ce
+sudo usermod -aG docker ${USER}
+```
+
+### 2. Pull Images
+📖 [Reference: Forked Open5gs Docker Documentation](https://github.com/ramosaurio/docker_open5gs)
+
+Pull base images: 
+```bash
+docker pull ghcr.io/herlesupreeth/docker_open5gs:master
+docker tag ghcr.io/herlesupreeth/docker_open5gs:master docker_open5gs
+
+docker pull ghcr.io/herlesupreeth/docker_grafana:master
+docker tag ghcr.io/herlesupreeth/docker_grafana:master docker_grafana
+
+docker pull ghcr.io/herlesupreeth/docker_metrics:master
+docker tag ghcr.io/herlesupreeth/docker_metrics:master docker_metrics
+```
+
+Pull IMSI components:
+```bash
+docker pull ghcr.io/herlesupreeth/docker_osmohlr:master
+docker tag ghcr.io/herlesupreeth/docker_osmohlr:master docker_osmohlr
+
+docker pull ghcr.io/herlesupreeth/docker_osmomsc:master
+docker tag ghcr.io/herlesupreeth/docker_osmomsc:master docker_osmomsc
+
+docker pull ghcr.io/herlesupreeth/docker_pyhss:master
+docker tag ghcr.io/herlesupreeth/docker_pyhss:master docker_pyhss
+
+docker pull ghcr.io/herlesupreeth/docker_kamailio:master
+docker tag ghcr.io/herlesupreeth/docker_kamailio:master docker_kamailio
+
+docker pull ghcr.io/herlesupreeth/docker_mysql:master
+docker tag ghcr.io/herlesupreeth/docker_mysql:master docker_mysql
+```
+
+### 2. Deploy Core
+📖 [Reference: Forked Open5gs Docker Documentation](https://github.com/ramosaurio/docker_open5gs)
+
+Pull base images:
+```bash
+docker compose -f sa-vonr-deploy.yaml up
+```
+
+## ✅ Verifying the Open5Gs deployment
+
+### 🔎 Check Open5Gs deployemtn
+
+To verify that Open5GS has been installed correctly, open your web browser and go to:
+
+http://{HOST-IP}:9999/
+
+Use the following login credentials:
+
+Username: admin
+Password: 1423
+
+If the web interface loads and you can log in successfully, the installation has been completed properly.
 
 ---
 
@@ -347,10 +411,29 @@ These steps ensure that:
 
 After these changes, the iPhone should be able to **detect and attach** to your private 5G network.
 
----
+
 🔗 Reference:  
 [https://github.com/herlesupreeth/docker_open5gs/discussions/248](https://github.com/herlesupreeth/docker_open5gs/discussions/248)  
 *(Credit to @herlesupreeth for documenting this behavior)*
+
+### 6. Instability in multi-host setups without an external clock source
+
+During testing, it was observed that **multi-host deployments** of the 5G SA network components can lead to **significant instability**. This is primarily due to the **lack of an external clock source**, which is critical for maintaining synchronization between the SDR and distributed network components (e.g., gNB and 5GC on different machines).
+
+In the absence of precise clock synchronization (typically achieved via GPSDOs or dedicated timing hardware), packet loss, attach failures, and unexpected behavior may occur—especially in real-time radio interfaces.
+
+#### ✅ Solution: Use a monolithic, single-host architecture
+
+To ensure system stability and consistent behavior in this testbed:
+
+- All components (5GC, gNB, SIM provisioning tools, etc.) are deployed on a **single host**.
+- The SDR relies on its **internal clock** for timing, which is adequate for controlled local environments.
+- This choice is also driven by **hardware limitations and cost considerations**, as external clocking solutions (GPSDO, IEEE 1588 PTP) may not be feasible for low-cost or home lab setups.
+
+📌 *This approach increases reliability for development and functional testing, at the cost of scalability.*
+
+---
+
 ## 📱 Tested User Equipment (UE)
 
 
@@ -401,6 +484,10 @@ After these changes, the iPhone should be able to **detect and attach** to your 
 - **USB 3.0 Performance Note for LimeSDR Mini**:
     - [https://wiki.myriadrf.org/LimeSDR-Mini_Quick_Test](https://wiki.myriadrf.org/LimeSDR-Mini_Quick_Test)  
       Official guide noting the importance of connecting LimeSDR Mini to a USB 3.0 port to avoid throughput bottlenecks in SDR applications.
+- **Docker Docks Installation**:
+    - [https://docs.docker.com/engine/install/ubuntu/](https://docs.docker.com/engine/install/ubuntu/)  
+      Official guide for Ubuntu installation
+
 ---
 
 ## 👨‍💻 Author
