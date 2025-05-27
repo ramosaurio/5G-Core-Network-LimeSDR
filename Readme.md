@@ -432,6 +432,182 @@ To ensure system stability and consistent behavior in this testbed:
 
 📌 *This approach increases reliability for development and functional testing, at the cost of scalability.*
 
+### 7. `TRANSFER ERROR` with LimeSDR Mini due to unstable USB voltage
+
+During testing with the **LimeSDR Mini**, repeated `[FATAL] [UHDSoapyDevice] TRANSFER ERROR` messages were observed shortly after starting the `gnb` service. These errors are caused by **instabilities in USB communication**, which can stem from insufficient or fluctuating voltage on the USB port.
+
+This issue is especially common when:
+
+- Using **USB front-panel ports**, laptop ports, or low-quality USB hubs.
+- The LimeSDR Mini is operated with **high TX gain** or **high sample rates**, increasing its power demand.
+- There are **multiple high-power USB devices** sharing the same internal USB controller.
+
+Below is an example of the log output when this error occurs:
+
+```
+ gnb -c gnb_rf_limesdr_01.yml 
+
+--== srsRAN gNB (commit 7e10e42fd3) ==--
+
+
+The PRACH detector will not meet the performance requirements with the configuration {Format B4, ZCZ 0, SCS 30kHz, Rx ports 1}.
+Lower PHY in quad executor mode.
+Available radio types: uhd.
+[INFO] [UHD] linux; GNU C++ version 9.4.0; Boost_107100; UHD_4.8.0.HEAD-0-50967d13
+[INFO] [LOGGING] Fastpath logging disabled at runtime.
+Making USRP object with args 'type=soapy,num_recv_frames=64,num_send_frames=64'
+[INFO] [UHDSoapyDevice] Make connection: 'LimeSDR Mini [USB 3.0] 1DA160BEF543E4'
+[INFO] [UHDSoapyDevice] Reference clock 40.00 MHz
+[INFO] [UHDSoapyDevice] Device name: LimeSDR-Mini_v2
+[INFO] [UHDSoapyDevice] Reference: 40 MHz
+[INFO] [UHDSoapyDevice] LMS7002M register cache: Disabled
+[INFO] [UHDSoapyDevice] Filter calibrated. Filter order-4th, filter bandwidth set to 23.04 MHz.Real pole 1st order filter set to 2.5 MHz. Preemphasis filter not active
+[INFO] [UHDSoapyDevice] TX LPF configured
+[INFO] [UHDSoapyDevice] RX LPF configured
+Cell pci=1, bw=20 MHz, 1T1R, dl_arfcn=632628 (n78), dl_freq=3489.42 MHz, dl_ssb_arfcn=632256, ul_freq=3489.42 MHz
+
+N2: Connection to AMF on 127.0.0.1:38412 completed
+[INFO] [UHDSoapyDevice] Tx calibration finished
+[INFO] [UHDSoapyDevice] Rx calibration finished
+==== gNB started ===
+Type <h> to view help
+[FATAL] [UHDSoapyDevice] TRANSFER ERROR
+[FATAL] [UHDSoapyDevice] TRANSFER ERROR
+[FATAL] [UHDSoapyDevice] TRANSFER ERROR
+[FATAL] [UHDSoapyDevice] TRANSFER ERROR
+[FATAL] [UHDSoapyDevice] TRANSFER ERROR
+...
+```
+
+#### ✅ Solution: Use a high-quality USB 3.0 port with stable power
+
+To resolve this issue:
+
+- Connect the LimeSDR Mini to a **rear-panel USB 3.0 port** directly on the motherboard (preferred).
+- Alternatively, use a **powered USB 3.0 hub** that provides stable 5V with sufficient current (≥1A).
+- Avoid passive USB hubs or extension cables, as they can introduce voltage drops.
+- Once the LimeSDR Mini was connected to a USB port with **better voltage stability**, the `TRANSFER ERROR` messages stopped, and the `gnb` process remained stable.
+
+📌 *Ensuring clean and stable power delivery to the SDR is crucial for reliable operation at high bandwidths and TX levels.*
+
+
+Sistema en tiempo real:
+
+tail -f /tmp/gnb.log
+2025-05-08T12:14:42.015028 [GNB     ] [I] Built in Release mode using commit 7e10e42fd3 on branch HEAD
+2025-05-08T12:14:44.790681 [PHY     ] [W] [   10.19] Real-time failure in low-phy: PRACH request late for sector 0, slot 10.19 and start symbol 0.
+2025-05-08T12:14:44.800652 [PHY     ] [W] [   11.19] Real-time failure in low-phy: PRACH request late for sector 0, slot 11.19 and start symbol 0.
+2025-05-08T12:14:44.810722 [PHY     ] [W] [   12.19] Real-time failure in low-phy: PRACH request late for sector 0, slot 12.19 and start symbol 0.
+2025-05-08T12:14:44.820707 [PHY     ] [W] [   13.19] Real-time failure in low-phy: PRACH request late for sector 0, slot 13.19 and start symbol 0.
+2025-05-08T12:14:44.831697 [PHY     ] [W] [   14.19] Real-time failure in low-phy: PRACH request late for sector 0, slot 14.19 and start symbol 0.
+2025-05-08T12:14:44.841727 [PHY     ] [W] [   15.19] Real-time failure in low-phy: PRACH request late for sector 0, slot 15.19 and start symbol 0.
+2025-05-08T12:14:44.851649 [PHY     ] [W] [   16.19] Real-time failure in low-phy: PRACH request late for sector 0, slot 16.19 and start symbol 0.
+2025-05-08T12:14:44.860731 [PHY     ] [W] [   17.19] Real-time failure in low-phy: PRACH request late for sector 0, slot 17.19 and start symbol 0.
+2025-05-08T12:14:44.870582 [PHY     ] [W] [   18.19] Real-time failure in low-phy: PRACH request late for sector 0, slot 18.19 and start symbol 0.
+2025-05-08T12:14:44.880701 [PHY     ] [W] [   19.19] Real-time failure in low-phy: PRACH request late for sector 0, slot 19.19 and start symbol 0.
+2025-05-08T12:14:44.891690 [PHY     ] [W] [   20.19] Real-time failure in low-phy: PRACH request late for sector 0, slot 20.19 and start symbol 0.
+2025-05-08T12:14:44.900584 [PHY     ] [W] [   21.19] Real-time failure in low-phy: PRACH request late for sector 0, slot 21.19 and start symbol 0.
+2025-05-08T12:14:44.911645 [PHY     ] [W] [   22.19] Real-time failure in low-phy: PRACH request late for sector 0, slot 22.19 and start symbol 0.
+
+
+sudo apt install -y linux-tools-common linux-tools-generic
+sudo cpupower frequency-set -g performance
+
+1. ✅ Fijar el modo "performance" en todos los núcleos
+
+sudo apt install -y linux-tools-common linux-tools-generic
+sudo cpupower frequency-set -g performance
+
+Para que se aplique siempre:
+
+sudo systemctl enable cpupower.service
+
+2. ✅ Desactivar servicios que interrumpen (GUI, snapd, etc.)
+
+Desde consola (TTY o SSH), detén servicios innecesarios:
+
+sudo systemctl stop gdm3     # o lightdm, sddm, según tu entorno
+sudo systemctl stop snapd
+
+3. ✅ Aislar núcleos para tiempo real (kernel boot param)
+
+Edita el archivo de configuración del GRUB:
+
+sudo nano /etc/default/grub
+
+Cambia esta línea:
+
+GRUB_CMDLINE_LINUX_DEFAULT="quiet splash"
+
+Por esta (ajustando núcleos según tu CPU):
+
+GRUB_CMDLINE_LINUX_DEFAULT="quiet splash isolcpus=2,3 nohz_full=2,3 rcu_nocbs=2,3"
+
+Luego:
+
+sudo update-grub
+sudo reboot
+
+4. ✅ Verifica que los núcleos estén aislados
+
+Después del reinicio:
+
+cat /proc/cmdline
+
+Y:
+
+htop
+
+Confirma que los núcleos 2 y 3 no tengan procesos del sistema.
+5. ✅ Ejecución en tiempo real del gNB
+
+sudo taskset -c 2,3 chrt -f 99 ./gnb -c gnb_rf_limesdr_01.yml
+
+6. ✅ Conectar el LimeSDR Mini en puerto USB 3.0 directo a placa
+
+   Evita hubs y extensores.
+
+   Usa cable corto, blindado, de buena calidad.
+
+   Usa lsusb -t para confirmar que está en un root hub USB 3.0.
+
+7. ✅ Verifica que Soapy y LimeSuite estén actualizados
+
+sudo apt update
+sudo apt install soapysdr-tools limesuite liblimesuite-dev
+LimeUtil --update
+
+8. ✅ Desactiva ahorro de energía USB (por si Ubuntu intenta dormir el bus)
+
+sudo nano /etc/default/grub
+
+Añade usbcore.autosuspend=-1:
+
+GRUB_CMDLINE_LINUX_DEFAULT="quiet splash usbcore.autosuspend=-1 ..."
+
+Luego:
+
+sudo update-grub
+sudo reboot
+
+9. ✅ (Opcional) Usa kernel de baja latencia
+
+sudo apt install linux-lowlatency
+
+Reinicia y selecciona el kernel lowlatency desde GRUB si no es por defecto.
+🧪 Resultado esperado
+
+Con todo esto deberías poder ejecutar el gnb así:
+
+sudo taskset -c 2,3 chrt -f 99 ./gnb -c gnb_rf_limesdr_01.yml
+
+Y lograr 0 errores PRACH con esta configuración:
+
+srate: 30.72e6
+channel_bandwidth_MHz: 30
+tx_gain: 45
+
+
 ---
 
 ## 📱 Tested User Equipment (UE)
